@@ -4,6 +4,7 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
 
+#include "drive.hpp"
 #include "main.h"
 
 // Set curve defaults
@@ -214,13 +215,20 @@ void Drive::opcontrol_drive_sensors_reset() {
 void Drive::opcontrol_joystick_practicemode_toggle(bool toggle) { practice_mode_is_on = toggle; }
 bool Drive::opcontrol_joystick_practicemode_toggle_get() { return practice_mode_is_on; }
 
+void Drive::opcontrol_drive_reverse_set(bool toggle) { is_reversed = toggle; }
+bool Drive::opcontrol_drive_reverse_get() { return is_reversed; }
+
+
 void Drive::opcontrol_joystick_threshold_iterate(int l_stick, int r_stick) {
   // Check the motors are being set to power
   if (abs(l_stick) > 0 || abs(r_stick) > 0) {
     if (practice_mode_is_on && (abs(l_stick) > 120 || abs(r_stick) > 120))
       drive_set(0, 0);
     else
-      drive_set(l_stick, r_stick);
+      if(is_reversed == true)
+        drive_set(-r_stick, -l_stick);
+      else
+         drive_set(l_stick, r_stick);
     if (active_brake_kp != 0) drive_sensor_reset();
   }
   // When joys are released, run active brake (P) on drive
